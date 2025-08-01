@@ -5,12 +5,14 @@ A complete Retrieval-Augmented Generation (RAG) system for Napoleon Hill's "Outw
 ## 🎯 Project Overview
 
 This project implements a fully functional Q&A system that can answer questions about "Outwitting the Devil" using:
+- **Hybrid search** (BM25 + semantic) for superior retrieval
 - **Local embeddings** (e5-large-v2)
 - **Vector database** (Qdrant)
 - **Local LLM** (Ollama with Gemma3)
 - **Zero API costs** - runs completely offline
 
 ### Key Features
+- 🔍 Hybrid search combining keyword (BM25) and semantic retrieval
 - 📖 Semantic search through 300+ pages of content
 - 💬 Natural language answers with source citations
 - 🚀 Fast retrieval (<2ms search latency)
@@ -20,10 +22,12 @@ This project implements a fully functional Q&A system that can answer questions 
 ## 🏗️ Architecture
 
 ```
-User Query → Embedding → Vector Search → Retrieval → LLM → Answer
-     ↓           ↓              ↓            ↓         ↓        ↓
-"What is    e5-large-v2     Qdrant      Top 8      Gemma3   Natural
- fear?"      (1024-dim)    (Cosine)     chunks    (Ollama)  response
+User Query → Hybrid Search → Retrieval → LLM → Answer
+     ↓            ↓              ↓         ↓        ↓
+"What is    BM25 (keywords)   Top 8    Gemma3   Natural
+ fear?"     +                 chunks   (Ollama)  response
+           Semantic (e5)
+           (1024-dim vectors)
 ```
 
 ## 📊 Performance Metrics
@@ -59,31 +63,36 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Generate embeddings (one-time setup):
+3. Generate embeddings and build indexes (one-time setup):
 ```bash
 python generate_embeddings.py
+python build_bm25_index.py
 ```
 
 ### Usage
 
-#### Interactive Mode
-```bash
-python query_rag.py
-```
-
-#### Single Query
+#### Standard RAG (Semantic Only)
 ```bash
 python query_rag.py "What does Hill mean by drifting?"
 ```
 
-#### Verbose Mode (see retrieval details)
+#### Hybrid RAG (BM25 + Semantic) - Recommended
 ```bash
-python query_rag.py "What are the six basic fears?" --verbose
+python query_rag_hybrid.py "What is hypnotic rhythm?"
 ```
 
-#### JSON Output
+#### Compare Search Methods
 ```bash
-python query_rag.py "What is hypnotic rhythm?" --json
+python query_rag_hybrid.py "What is hypnotic rhythm?" --compare
+```
+
+#### Adjust Hybrid Weight
+```bash
+# More keyword focus (alpha=0.3)
+python query_rag_hybrid.py "six basic fears" --alpha 0.3
+
+# More semantic focus (alpha=0.7)
+python query_rag_hybrid.py "meaning of drifting" --alpha 0.7
 ```
 
 ## 📁 Project Structure
@@ -94,7 +103,9 @@ outwitting-the-rag/
 │   ├── extract_full_pdf.py        # PDF text extraction and cleaning
 │   ├── chunk_text_simple.py       # Text chunking with metadata
 │   ├── generate_embeddings.py     # Embedding generation and storage
-│   └── query_rag.py              # Main RAG interface
+│   ├── build_bm25_index.py        # BM25 index for keyword search
+│   ├── query_rag.py               # Semantic-only RAG interface
+│   └── query_rag_hybrid.py        # Hybrid RAG interface (recommended)
 │
 ├── Data Files
 │   ├── processed_text/

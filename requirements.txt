@@ -21,7 +21,8 @@ torch==2.3.1           # PyTorch for running embedding models
 transformers==4.42.3   # HuggingFace transformers
 # chromadb==0.4.22       # Alternative: Vector database with built-in persistence
 # faiss-cpu==1.7.4       # Alternative: Facebook's vector similarity search
-# openai==1.6.1          # Alternative: OpenAI API for embeddings
+openai==1.98.0          # OpenAI API for embeddings and LLM
+rank-bm25==0.2.2        # BM25 for keyword search in hybrid RAG
 
 # RAG Framework & Tools (Week 1 - Day 3+)
 # --------------------------------------
