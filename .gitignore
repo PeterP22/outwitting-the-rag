@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+extraction_results/
+*.pdf
+!Hill_Napoleon_-_Outwitting_the_devil.pdf
+embeddings_cache/
+vector_db/
+.env
+.env.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Model files (if downloading locally)
+models/
+*.bin
+*.pkl
+*.h5
+
+# Data files
+*.json
+*.jsonl
+*.csv
+!book_chunks.jsonl  # Keep our processed chunks
+
+# Evaluation results
+eval_results/
+benchmarks/
