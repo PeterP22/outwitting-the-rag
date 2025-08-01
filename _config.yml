@@ -1,0 +1,5 @@
+theme: jekyll-theme-minimal
+title: Outwitting the Devil - RAG Application
+description: A complete Retrieval-Augmented Generation system built from scratch as a learning project
+show_downloads: true
+google_analytics:
