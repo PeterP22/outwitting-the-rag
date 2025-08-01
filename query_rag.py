@@ -29,7 +29,7 @@ OLLAMA_MODEL = "gemma3:latest"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 # RAG Parameters
-DEFAULT_TOP_K = 5
+DEFAULT_TOP_K = 8
 SCORE_THRESHOLD = 0.98  # Keep chunks within 2% of top score
 MAX_CONTEXT_LENGTH = 3000  # Characters to send to LLM
 
