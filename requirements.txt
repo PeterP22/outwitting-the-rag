@@ -15,10 +15,13 @@ spacy==3.7.2           # Advanced NLP (optional, comment out if not needed)
 
 # Vector Databases & Embeddings (Week 1 - Day 2+)
 # ----------------------------------------------
-# chromadb==0.4.22       # Vector database with built-in persistence
-# faiss-cpu==1.7.4       # Facebook's vector similarity search
-# openai==1.6.1          # OpenAI API for embeddings
-# sentence-transformers==2.2.2  # Local embeddings (HuggingFace)
+qdrant-client==1.9.1   # Qdrant vector database client
+sentence-transformers==2.7.0  # Local embeddings (HuggingFace)
+torch==2.3.1           # PyTorch for running embedding models
+transformers==4.42.3   # HuggingFace transformers
+# chromadb==0.4.22       # Alternative: Vector database with built-in persistence
+# faiss-cpu==1.7.4       # Alternative: Facebook's vector similarity search
+# openai==1.6.1          # Alternative: OpenAI API for embeddings
 
 # RAG Framework & Tools (Week 1 - Day 3+)
 # --------------------------------------
