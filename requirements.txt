@@ -1,0 +1,51 @@
+# Outwitting the Devil - RAG Application Requirements
+# ===================================================
+
+# PDF Processing Libraries
+# ------------------------
+PyPDF2==3.0.1          # Simple PDF text extraction
+pdfplumber==0.10.3     # Advanced PDF extraction with layout detection
+pymupdf==1.23.8        # High-quality PDF processing (aka fitz)
+
+# Text Processing & NLP
+# ---------------------
+nltk==3.8.1            # Natural language processing toolkit
+spacy==3.7.2           # Advanced NLP (optional, comment out if not needed)
+# python -m spacy download en_core_web_sm  # Run after installing spacy
+
+# Vector Databases & Embeddings (Week 1 - Day 2+)
+# ----------------------------------------------
+# chromadb==0.4.22       # Vector database with built-in persistence
+# faiss-cpu==1.7.4       # Facebook's vector similarity search
+# openai==1.6.1          # OpenAI API for embeddings
+# sentence-transformers==2.2.2  # Local embeddings (HuggingFace)
+
+# RAG Framework & Tools (Week 1 - Day 3+)
+# --------------------------------------
+# langchain==0.1.0       # RAG orchestration framework
+# langchain-community==0.0.10  # Community integrations
+# tiktoken==0.5.2        # OpenAI tokenizer for context management
+
+# API & Web Framework (Week 1 - Day 4)
+# -----------------------------------
+# fastapi==0.108.0       # Modern web API framework
+# uvicorn==0.25.0        # ASGI server for FastAPI
+# pydantic==2.5.3        # Data validation
+
+# Evaluation & Testing (Week 1 - Day 5)
+# ------------------------------------
+# nltk==3.8.1            # For BLEU score calculation (already included above)
+# rouge-score==0.1.2     # ROUGE metrics for text evaluation
+# pytest==7.4.4          # Testing framework
+
+# Development Tools
+# -----------------
+python-dotenv==1.0.0   # Environment variable management
+ipython==8.19.0        # Enhanced Python shell
+jupyter==1.0.0         # Jupyter notebooks for experimentation
+
+# Utilities
+# ---------
+tqdm==4.66.1           # Progress bars
+colorama==0.4.6        # Colored terminal output
+pyyaml==6.0.1          # YAML configuration files
