@@ -41,6 +41,33 @@ The extraction is high quality with:
 - Minimal OCR errors (some remain like "aurhor" → "author")
 - Page markers included for reference (can be removed if not needed)
 
+### Future Quality Refinements (Optional)
+
+While the current quality is sufficient for RAG, these improvements could be made later:
+
+1. **OCR Error Dictionary**
+   - Create `ocr_corrections.json` with common errors
+   - Apply corrections with word boundary regex
+   - Examples: "aurhor" → "author", "presendy" → "presently"
+
+2. **Advanced Hyphenation**
+   - Use spell checker (enchant) to validate joined words
+   - Only join if result is a valid English word
+
+3. **Statistical Anomaly Detection**
+   - Find unusual character sequences/bigrams
+   - Flag potential errors for review
+
+4. **ML-Based Cleanup**
+   - Use grammar correction models
+   - Process chunks through transformer models
+
+5. **Validation Script**
+   - Find words not in English dictionary
+   - Generate frequency report of potential errors
+
+**Note**: Current quality is good enough for embeddings/RAG. These refinements would be for production-grade applications.
+
 ## Next Steps for Day 2
 
 1. **Implement text chunking strategy**
