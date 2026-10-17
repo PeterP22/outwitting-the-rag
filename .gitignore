@@ -23,7 +23,6 @@ ENV/
 # Project specific
 extraction_results/
 *.pdf
-!Hill_Napoleon_-_Outwitting_the_devil.pdf
 embeddings_cache/
 vector_db/
 .env
@@ -61,3 +60,9 @@ benchmarks/
 # ragbench
 .cache/
 !results/*.json
+
+# Book text and derived indexes (copyrighted, never commit)
+processed_text/
+qdrant_db/
+legacy/processed_text/
+legacy/qdrant_db/

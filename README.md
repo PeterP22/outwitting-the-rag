@@ -1,6 +1,6 @@
 # outwitting-the-rag
 
-[![ci](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml)
+[![ci](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A cheap, reproducible RAG eval harness that scores BM25, dense, hybrid and reranked retrieval on recall, answer quality, latency and cost.
 
