@@ -83,6 +83,7 @@ graph LR
 # Clone and setup
 git clone https://github.com/PeterP22/outwitting-the-rag.git
 cd outwitting-the-rag
+cd legacy
 ./setup_environment.sh
 
 # Generate embeddings (one-time)

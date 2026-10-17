@@ -58,3 +58,6 @@ models/
 # Evaluation results
 eval_results/
 benchmarks/
+# ragbench
+.cache/
+!results/*.json

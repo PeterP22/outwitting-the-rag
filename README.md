@@ -1,267 +1,51 @@
-# Outwitting the Devil - RAG Application 📚
+# outwitting-the-rag
 
-A complete Retrieval-Augmented Generation (RAG) system for Napoleon Hill's "Outwitting the Devil", built from scratch as a learning project to understand AI engineering fundamentals.
+[![ci](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/PeterP22/outwitting-the-rag/actions/workflows/ci.yml)
 
-## 🎯 Project Overview
+A cheap, reproducible RAG eval harness that scores BM25, dense, hybrid and reranked retrieval on recall, answer quality, latency and cost.
 
-This project implements a fully functional Q&A system that can answer questions about "Outwitting the Devil" using:
-- **Hybrid search** (BM25 + semantic) for superior retrieval
-- **Local embeddings** (e5-large-v2)
-- **Vector database** (Qdrant)
-- **Local LLM** (Ollama with Gemma3)
-- **Zero API costs** - runs completely offline
+**Hybrid + cross-encoder rerank: recall@5 0.976 and MRR 0.922, vs 0.919 and 0.829 for a BM25 baseline** (SQuAD v1.1 dev, 1,000 queries over 2,067 passages). Answering costs $0.13 per 1k queries with gpt-5.4-nano.
 
-### Key Features
-- 🔍 Hybrid search combining keyword (BM25) and semantic retrieval
-- 📖 Semantic search through 300+ pages of content
-- 💬 Natural language answers with source citations
-- 🚀 Fast retrieval (<2ms search latency)
-- 🔒 Completely local and private
-- 📍 Page-level source attribution
+![Recall@5 and answer F1 by retrieval setup](results/chart.png)
 
-## 🏗️ Architecture
-
-```
-User Query → Hybrid Search → Retrieval → LLM → Answer
-     ↓            ↓              ↓         ↓        ↓
-"What is    BM25 (keywords)   Top 8    Gemma3   Natural
- fear?"     +                 chunks   (Ollama)  response
-           Semantic (e5)
-           (1024-dim vectors)
+```mermaid
+flowchart LR
+    Q[Question] --> B[BM25]
+    Q --> D[bge-small dense]
+    B --> F[RRF fusion]
+    D --> F
+    F --> X[MiniLM cross-encoder rerank]
+    X --> L[gpt-5.4-nano answers from top 3]
+    L --> J[LLM judge: faithfulness]
+    L --> S[SQuAD EM / F1]
 ```
 
-## 📊 Performance Metrics
+## Key decisions
 
-- **PDF Processing**: 72,643 words extracted and cleaned
-- **Chunks**: 160 chunks of 500 words with 50-word overlap
-- **Embeddings**: 1024-dimensional vectors
-- **Search Speed**: <2ms per query
-- **Answer Generation**: 15-20s (using local Gemma3)
-- **Total Storage**: ~3MB (embeddings + database)
+- **Public, gold-labelled data.** Every SQuAD question has one gold passage and gold answers, so retrieval and answers are scored exactly. No LLM-made test set.
+- **Local CPU retrieval.** bm25s, plus fastembed ONNX models for embeddings and reranking. Retrieval costs $0, and only the answer and judge calls are paid.
+- **Cost from real token usage.** Each response's billed input and output tokens are multiplied by list price, and responses are cached on disk so reruns are free.
+- **What didn't work:** reranking lifted MRR by 8 points but didn't improve answers (F1 0.680 vs 0.694 for plain hybrid) and added about 17x the retrieval latency. Dense retrieval alone lost to BM25, because SQuAD questions reuse the passage's wording.
 
-## 🚀 Quick Start
+## Results
 
-### Prerequisites
-- Python 3.8+
-- [Ollama](https://ollama.ai/) with Gemma3 model installed
-- 4GB RAM minimum
+The 1,000 retrieval queries and 300 generation queries were sampled with seed 0. The model is `gpt-5.4-nano` with reasoning effort `none`, answering from the top 3 passages. Retrieval latency was measured on a shared 8-vCPU box. Raw numbers are in [results/results.json](results/results.json).
 
-### Installation
+| Setup | Recall@1 | Recall@5 | MRR@10 | p50 latency | EM | F1 | Faithful | $ / 1k queries |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BM25 (baseline) | 0.765 | 0.919 | 0.829 | 0.1 ms | 0.410 | 0.636 | 85.3% | 0.125 |
+| Dense (bge-small) | 0.662 | 0.889 | 0.759 | 16 ms | 0.433 | 0.639 | 91.2% | 0.124 |
+| Hybrid RRF | 0.762 | 0.937 | 0.839 | 19 ms | **0.467** | **0.694** | 85.6% | 0.125 |
+| Hybrid + rerank | **0.880** | **0.976** | **0.922** | 319 ms | 0.453 | 0.680 | 87.4% | 0.128 |
 
-1. Clone the repository:
-```bash
-git clone https://github.com/PeterP22/outwitting-the-rag.git
-cd outwitting-the-rag
-```
+The full run cost $0.25 in API calls, judge included.
 
-2. Set up environment:
-```bash
-./setup_environment.sh
-# Or manually:
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-3. Generate embeddings and build indexes (one-time setup):
-```bash
-python generate_embeddings.py
-python build_bm25_index.py
-```
-
-### Usage
-
-#### Standard RAG (Semantic Only)
-```bash
-python query_rag.py "What does Hill mean by drifting?"
-```
-
-#### Hybrid RAG (BM25 + Semantic) - Recommended
-```bash
-python query_rag_hybrid.py "What is hypnotic rhythm?"
-```
-
-#### Compare Search Methods
-```bash
-python query_rag_hybrid.py "What is hypnotic rhythm?" --compare
-```
-
-#### Adjust Hybrid Weight
-```bash
-# More keyword focus (alpha=0.3)
-python query_rag_hybrid.py "six basic fears" --alpha 0.3
-
-# More semantic focus (alpha=0.7)
-python query_rag_hybrid.py "meaning of drifting" --alpha 0.7
-```
-
-## 📁 Project Structure
-
-```
-outwitting-the-rag/
-├── Core Scripts
-│   ├── extract_full_pdf.py        # PDF text extraction and cleaning
-│   ├── chunk_text_simple.py       # Text chunking with metadata
-│   ├── generate_embeddings.py     # Embedding generation and storage
-│   ├── build_bm25_index.py        # BM25 index for keyword search
-│   ├── query_rag.py               # Semantic-only RAG interface
-│   └── query_rag_hybrid.py        # Hybrid RAG interface (recommended)
-│
-├── Data Files
-│   ├── processed_text/
-│   │   ├── outwitting_the_devil_cleaned.txt  # Cleaned book text
-│   │   └── book_chunks.jsonl                 # Chunked text with metadata
-│   └── qdrant_db/                             # Vector database storage
-│
-├── Test Scripts
-│   ├── test_book_questions.py     # Test with key book questions
-│   ├── test_ollama_models.py      # Model comparison
-│   └── debug_query_process.py     # Detailed query debugging
-│
-└── Documentation
-    ├── step1_summary.md           # PDF extraction details
-    ├── step2_summary.md           # Chunking strategy
-    ├── step3_summary.md           # Embedding implementation
-    └── step4_summary.md           # RAG interface details
-```
-
-## 🔧 Technical Implementation
-
-### 1. PDF Extraction (Step 1)
-- Tested 3 extraction methods (PyPDF2, pdfplumber, PyMuPDF)
-- Chose pdfplumber for best quality (94.6/100 score)
-- Implemented comprehensive text cleaning:
-  - Removed headers/footers
-  - Fixed hyphenation
-  - Normalized whitespace
-  - Preserved page markers
-
-### 2. Text Chunking (Step 2)
-- Fixed-size chunks: 500 words
-- Overlap: 50 words (10%)
-- Metadata per chunk:
-  ```json
-  {
-    "chunk_id": "chunk_0001",
-    "text": "actual content...",
-    "word_count": 500,
-    "start_page": 12,
-    "end_page": 14,
-    "preview": "first 150 chars..."
-  }
-  ```
-
-### 3. Embeddings & Vector Storage (Step 3)
-- Model: `intfloat/e5-large-v2` (1024-dim)
-- Vector DB: Qdrant (local mode)
-- Indexing: Cosine similarity
-- Special e5 prefixes:
-  ```python
-  # For indexing
-  text = f"passage: {chunk_text}"
-  # For queries
-  query = f"query: {user_question}"
-  ```
-
-### 4. RAG Pipeline (Step 4)
-- Retrieval: Top 8 chunks with score filtering
-- Score threshold: 98% of top score
-- Context limit: 3000 characters to LLM
-- Answer generation: Ollama Gemma3
-- Source citation: Page numbers included
-
-## 📈 Example Results
+## Quickstart
 
 ```bash
-❓ Query: "What are the six basic fears?"
-
-📖 Answer: According to pages 60-61 of "Outwitting the Devil," 
-the six basic fears the Devil uses to control people are:
-- Fear of poverty
-- Fear of criticism  
-- Fear of ill health
-- Fear of loss of love
-- Fear of old age
-- Fear of death
-
-📚 Sources: Pages 75-77
-⏱️ Response time: 2.15s
+uv sync
+uv run pytest
+OPENAI_API_KEY=... uv run python -m ragbench.run --retrieval-queries 1000 --gen-queries 300
 ```
 
-## 🧪 Testing & Evaluation
-
-Test the system with key book concepts:
-```bash
-# Run comprehensive test suite
-python test_book_questions.py
-
-# Quick test of main concepts
-./quick_test_questions.sh
-```
-
-Key questions that work well:
-- "What does Hill mean by drifting?"
-- "How does hypnotic rhythm influence habits?"
-- "What is definiteness of purpose?"
-- "What role does fear play according to the Devil?"
-
-## 🚧 Known Limitations & Future Improvements
-
-### Current Limitations
-1. **Retrieval Quality**: Sometimes misses most relevant chunks for direct questions
-2. **Speed**: 15-20s per query due to local LLM
-3. **Context Window**: Limited to 3000 chars (~4-5 chunks)
-
-### Planned Enhancements
-- [ ] Paragraph-based semantic chunking
-- [ ] Query expansion for better retrieval
-- [ ] Hybrid search (BM25 + semantic)
-- [ ] Conversation memory
-- [ ] Web UI with Gradio/Streamlit
-- [ ] GPU acceleration
-
-## 💰 Cost Analysis
-
-**Completely Free!**
-- Embeddings: $0 (local e5-large-v2)
-- Vector DB: $0 (local Qdrant)
-- LLM: $0 (local Ollama)
-- **Total: $0** per query
-
-Compare to cloud-based approach:
-- OpenAI embeddings: ~$0.0012
-- OpenAI GPT-3.5: ~$0.002 per query
-- Cloud vector DB: $0.05+/month
-
-## 🎓 Learning Outcomes
-
-This project demonstrates:
-1. **PDF Processing**: Extraction, cleaning, quality analysis
-2. **Text Chunking**: Strategies, overlap, metadata design
-3. **Embeddings**: Model selection, generation, storage
-4. **Vector Search**: Similarity metrics, optimization
-5. **RAG Pipeline**: Retrieval, context assembly, answer generation
-6. **System Design**: Modular architecture, error handling
-
-## 🤝 Contributing
-
-This is a learning project, but contributions are welcome! Areas for improvement:
-- Better chunking strategies
-- Additional embedding models
-- Performance optimizations
-- UI/UX enhancements
-
-## 📄 License
-
-This project is for educational purposes. The book content remains the property of the Napoleon Hill Foundation.
-
-## 🙏 Acknowledgments
-
-- Napoleon Hill Foundation for "Outwitting the Devil"
-- HuggingFace for e5-large-v2 model
-- Qdrant team for the vector database
-- Ollama team for local LLM support
-
----
-
-Built with 🧠 to understand RAG systems from first principles.
+The original book-scale RAG app lives in [legacy/](legacy/).
